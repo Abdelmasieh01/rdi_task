@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 class Content(models.Model):
     # This is an abstract model used only to add those fields to other models by inheritance
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150) # Database name, made to distinguish between objects
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
