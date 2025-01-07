@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Image as ImageModel, Pdf
-import base64, uuid
+import base64
+import uuid
 from PIL import Image
 from PyPDF2 import PdfReader
 from django.core.files.base import ContentFile
@@ -20,7 +21,8 @@ class UploadSerializer(serializers.Serializer):
             # Get the extension from the format text
             ext = format.split("/")[1]
             # Return as file object
-            file_object = ContentFile(decoded_file, name=uuid.uuid4().urn[9:] + '.' + ext)
+            file_object = ContentFile(
+                decoded_file, name=uuid.uuid4().urn[9:] + '.' + ext)
             return file_object
         except Exception as e:
             print(e.__str__())
