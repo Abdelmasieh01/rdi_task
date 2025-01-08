@@ -3,11 +3,12 @@ from rest_framework.generics import ListAPIView, RetrieveDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.files.base import ContentFile
-from .serializers import UploadSerializer, ImageDetailSerializer, PdfDetailSerializer, ImageSerializer, PdfSerializer, RotateImageSerializer
+from .serializers import UploadSerializer, ImageDetailSerializer, PdfDetailSerializer, ImageSerializer, PdfSerializer, RotateImageSerializer, PdfToImageSerializer
 from .models import Image as ImageModel, Pdf
 from PIL import Image
 from io import BytesIO
 from uuid import uuid4
+from pdf2image import convert_from_path
 
 
 class UploadView(APIView):
@@ -114,13 +115,12 @@ class RotateImageView(APIView):
                 rot_img.save(buffer, format=format)
                 buffer.seek(0)
 
-                rot_img_name = orig_img.name + " - rotation: " + str(rot_angle)
-                rot_img_file = ContentFile(
-                    buffer.read(), name=uuid4().urn[9:] + '.' + format)
-                
+                rot_img_name = f"{orig_img.name} - rotation: {rot_angle}"
                 rot_img_obj = ImageModel(
-                    name=rot_img_name, width=orig_img.width, height=orig_img.height,
-                    file=rot_img_file, channels=orig_img.channels)
+                    name=rot_img_name, width=orig_img.width, height=orig_img.height, channels=orig_img.channels)
+                rot_img_obj.file.save(
+                    uuid4().urn[9:] + '.' + format, buffer, save=False)
+
                 rot_img_obj.save()
                 rot_img_item = ImageSerializer(instance=rot_img_obj)
                 return Response({"message": "Image rotated successfully!", "data": rot_img_item.data}, status=status.HTTP_201_CREATED)
@@ -132,4 +132,38 @@ class RotateImageView(APIView):
 
 
 class ConvertPdfToImageView(APIView):
-    pass
+    def post(self, request):
+        serializer = PdfToImageSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                pdf = serializer.validated_data["id"]
+                images = convert_from_path(
+                    pdf.file.path, poppler_path="C:\\Users\\20155\\Downloads\\Compressed\\Release-24.08.0-0\\poppler-24.08.0\\Library\\bin")
+                pdf_image_list = []
+                for i, image in enumerate(images):
+                    # Data for each image
+                    image_name = f"PDF: {pdf.name} - Page: {i + 1}"
+                    width = image.width
+                    height = image.height
+                    channels = len(image.getbands())
+                    pdf_image = ImageModel(
+                        name=image_name, channels=channels, width=width, height=height)
+
+                    # Convert Image to byte stream
+                    image_io = BytesIO()
+                    # pdf2image always uses PNG format
+                    image.save(image_io, format="PNG")
+                    image_io.seek(0)
+
+                    pdf_image.file.save(
+                        uuid4().urn[9:] + ".png", image_io, save=False)
+                    pdf_image.save()
+                    pdf_image_list.append(pdf_image)
+
+                pdf_images = ImageDetailSerializer(pdf_image_list, many=True)
+                return Response(pdf_images.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(e)
+                return Response({"message": "Invalid data."}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

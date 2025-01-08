@@ -75,3 +75,7 @@ class PdfDetailSerializer(serializers.ModelSerializer):
 class RotateImageSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(queryset=ImageModel.objects.all())
     rot_angle = serializers.FloatField()
+
+
+class PdfToImageSerializer(serializers.Serializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Pdf.objects.all())
