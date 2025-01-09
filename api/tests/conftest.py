@@ -1,8 +1,5 @@
 import pytest
-import os
 from rest_framework.test import APIClient
-from django.core.files.uploadedfile import SimpleUploadedFile
-from api.models import Image, Pdf
 
 @pytest.fixture
 def api_client():

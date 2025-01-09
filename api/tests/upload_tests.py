@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 from rest_framework.reverse import reverse
 from api.models import Image, Pdf
+from utils import delete_file
 
 @pytest.fixture(scope="module")
 def url():
@@ -25,6 +26,7 @@ def test_upload_valid_image(api_client: APIClient, valid_image_base64, url):
     assert "file" in data
     assert data["file"].endswith(".png")
     assert Image.objects.count() == 1
+    delete_file(data["file"])
 
 @pytest.mark.django_db
 def test_upload_valid_pdf(api_client: APIClient, valid_pdf_base64, url):
@@ -44,6 +46,7 @@ def test_upload_valid_pdf(api_client: APIClient, valid_pdf_base64, url):
     assert "file" in data
     assert data["file"].endswith(".pdf")
     assert Pdf.objects.count() == 1
+    delete_file(data["file"])  
 
 @pytest.mark.django_db
 def test_upload_invalid_base64(api_client: APIClient, url):
