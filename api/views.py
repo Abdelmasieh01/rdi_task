@@ -137,8 +137,7 @@ class ConvertPdfToImageView(APIView):
         if serializer.is_valid():
             try:
                 pdf = serializer.validated_data["id"]
-                images = convert_from_path(
-                    pdf.file.path, poppler_path="C:\\Users\\20155\\Downloads\\Compressed\\Release-24.08.0-0\\poppler-24.08.0\\Library\\bin")
+                images = convert_from_path(pdf.file.path)
                 pdf_image_list = []
                 for i, image in enumerate(images):
                     # Data for each image
