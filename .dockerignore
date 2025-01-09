@@ -110,6 +110,9 @@ celerybeat-schedule.*
 *.sublime-workspace 
 *.sublime-project 
 
+# Envinronment
+.env
+
 # sftp configuration file 
 sftp-config.json 
 
