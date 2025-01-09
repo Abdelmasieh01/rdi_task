@@ -25,7 +25,7 @@ class UploadSerializer(serializers.Serializer):
                 decoded_file, name=uuid.uuid4().urn[9:] + '.' + ext)
             return file_object
         except Exception as e:
-            print(e.__str__())
+            # print(e.__str__())
             raise serializers.ValidationError("Invalid base64 string.")
 
     def get_file_properties(self, file_type, file_object):
